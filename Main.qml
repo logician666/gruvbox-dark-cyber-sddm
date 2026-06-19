@@ -66,11 +66,53 @@ Rectangle {
                 ComboBox {
                     id: userCombo
                     Layout.fillWidth: true
-                    model: sddm.userModel
+                    model: userModel
                     textRole: "name"
-                    currentIndex: sddm.userModel.lastIndex
+                    currentIndex: userModel.lastIndex >= 0 ? userModel.lastIndex : 0
                     font.family: config.font
                     font.pixelSize: parseInt(config.fontSize)
+                    background: Rectangle {
+                        color: config.passwordBackground
+                        border.color: config.passwordBorder
+                        radius: 4
+                    }
+                    contentItem: Text {
+                        text: userCombo.displayText
+                        color: config.passwordColor
+                        font: userCombo.font
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
+                    }
+                    delegate: ItemDelegate {
+                        width: userCombo.width
+                        contentItem: Text {
+                            text: model.name
+                            color: config.passwordColor
+                            font: userCombo.font
+                            elide: Text.ElideRight
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        background: Rectangle {
+                            color: userCombo.highlightedIndex === index ? config.passwordBorder : config.passwordBackground
+                        }
+                    }
+                    popup: Popup {
+                        y: userCombo.height - 1
+                        width: userCombo.width
+                        implicitHeight: contentItem.implicitHeight
+                        padding: 1
+                        contentItem: ListView {
+                            clip: true
+                            implicitHeight: contentHeight
+                            model: userCombo.popup.visible ? userCombo.delegateModel : null
+                            currentIndex: userCombo.highlightedIndex
+                        }
+                        background: Rectangle {
+                            color: config.passwordBackground
+                            border.color: config.passwordBorder
+                            radius: 4
+                        }
+                    }
                 }
 
                 TextField {
@@ -119,11 +161,53 @@ Rectangle {
             
             ComboBox {
                 id: sessionCombo
-                model: sddm.sessionModel
+                model: sessionModel
                 textRole: "name"
-                currentIndex: sddm.sessionModel.lastIndex
+                currentIndex: sessionModel.lastIndex >= 0 ? sessionModel.lastIndex : 0
                 font.family: config.font
                 font.pixelSize: parseInt(config.fontSize)
+                background: Rectangle {
+                    color: config.passwordBackground
+                    border.color: config.passwordBorder
+                    radius: 4
+                }
+                contentItem: Text {
+                    text: sessionCombo.displayText
+                    color: config.passwordColor
+                    font: sessionCombo.font
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                }
+                delegate: ItemDelegate {
+                    width: sessionCombo.width
+                    contentItem: Text {
+                        text: model.name
+                        color: config.passwordColor
+                        font: sessionCombo.font
+                        elide: Text.ElideRight
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    background: Rectangle {
+                        color: sessionCombo.highlightedIndex === index ? config.passwordBorder : config.passwordBackground
+                    }
+                }
+                popup: Popup {
+                    y: sessionCombo.height - 1
+                    width: sessionCombo.width
+                    implicitHeight: contentItem.implicitHeight
+                    padding: 1
+                    contentItem: ListView {
+                        clip: true
+                        implicitHeight: contentHeight
+                        model: sessionCombo.popup.visible ? sessionCombo.delegateModel : null
+                        currentIndex: sessionCombo.highlightedIndex
+                    }
+                    background: Rectangle {
+                        color: config.passwordBackground
+                        border.color: config.passwordBorder
+                        radius: 4
+                    }
+                }
             }
             
             Item { Layout.fillWidth: true } // Spacer
