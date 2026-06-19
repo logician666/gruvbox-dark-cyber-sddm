@@ -24,154 +24,191 @@ Rectangle {
     Item {
         anchors.fill: parent
 
-        // Time and Date
+        // Main Content Column (prevents overlap)
         ColumnLayout {
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
-            anchors.topMargin: 120
-            spacing: 5
-
-            Text {
-                Layout.alignment: Qt.AlignHCenter
-                text: Qt.formatTime(new Date(), "hh:mm")
-                color: config.clockColor
-                font.family: config.clockFont
-                font.pixelSize: parseInt(config.clockFontSize) || 64
-                font.bold: true
-            }
-            Text {
-                Layout.alignment: Qt.AlignHCenter
-                text: Qt.formatDate(new Date(), Qt.DefaultLocaleLongDate)
-                color: config.dateColor
-                font.family: config.dateFont
-                font.pixelSize: parseInt(config.dateFontSize) || 24
-            }
-        }
-
-        // Login Panel
-        Rectangle {
             anchors.centerIn: parent
-            width: 450
-            height: 350
-            color: "#d9282828" // Gruvbox dark with alpha
-            radius: 12
-            border.color: config.loginBorder
-            border.width: 1
+            spacing: 30
 
+            // Time and Date
             ColumnLayout {
-                anchors.centerIn: parent
-                width: parent.width * 0.85
-                spacing: 20
+                Layout.alignment: Qt.AlignHCenter
+                spacing: 5
 
-                // User Row
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 10
-                    Image {
-                        source: "icons/user.svg"
-                        sourceSize.width: 24
-                        sourceSize.height: 24
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: Qt.formatTime(new Date(), "hh:mm")
+                    color: config.clockColor
+                    font.family: config.clockFont
+                    font.pixelSize: parseInt(config.clockFontSize) || 64
+                    font.bold: true
+                }
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: Qt.formatDate(new Date(), Qt.DefaultLocaleLongDate)
+                    color: config.dateColor
+                    font.family: config.dateFont
+                    font.pixelSize: parseInt(config.dateFontSize) || 24
+                }
+            }
+
+            // Login Panel
+            Rectangle {
+                Layout.alignment: Qt.AlignHCenter
+                width: 400
+                implicitHeight: loginContent.implicitHeight + 60
+                color: "#d9282828" // Gruvbox dark with alpha
+                radius: 12
+                border.color: config.loginBorder
+                border.width: 1
+
+                ColumnLayout {
+                    id: loginContent
+                    anchors.centerIn: parent
+                    width: parent.width * 0.85
+                    spacing: 20
+
+                    // Distro Logo and Name
+                    ColumnLayout {
+                        Layout.alignment: Qt.AlignHCenter
+                        spacing: 8
+                        
+                        Image {
+                            Layout.alignment: Qt.AlignHCenter
+                            source: "icons/fedora.svg"
+                            sourceSize.width: 48
+                            sourceSize.height: 48
+                        }
+                        
+                        Text {
+                            Layout.alignment: Qt.AlignHCenter
+                            text: "Fedora KDE"
+                            color: "#ebdbb2"
+                            font.family: config.font
+                            font.pixelSize: 20
+                            font.bold: true
+                        }
+                        
+                        Text {
+                            Layout.alignment: Qt.AlignHCenter
+                            text: "Login"
+                            color: "#b8bb26" // Gruvbox green
+                            font.family: config.font
+                            font.pixelSize: 14
+                        }
                     }
-                    ComboBox {
-                        id: userCombo
+
+                    Item { height: 5 } // Spacer
+
+                    // User Row
+                    RowLayout {
                         Layout.fillWidth: true
-                        model: userModel
-                        textRole: "name"
-                        currentIndex: userModel.lastIndex >= 0 ? userModel.lastIndex : 0
-                        font.family: config.font
-                        font.pixelSize: parseInt(config.fontSize)
-                        background: Rectangle {
-                            color: "transparent"
-                            border.color: config.passwordBorder
-                            radius: 6
+                        spacing: 10
+                        Image {
+                            source: "icons/user.svg"
+                            sourceSize.width: 24
+                            sourceSize.height: 24
                         }
-                        contentItem: Text {
-                            text: userCombo.displayText
-                            color: config.passwordColor
-                            font: userCombo.font
-                            verticalAlignment: Text.AlignVCenter
-                            leftPadding: 10
-                            elide: Text.ElideRight
-                        }
-                        delegate: ItemDelegate {
-                            width: userCombo.width
-                            contentItem: Text {
-                                text: model.name
-                                color: config.passwordColor
-                                font: userCombo.font
-                                elide: Text.ElideRight
-                                verticalAlignment: Text.AlignVCenter
-                            }
+                        ComboBox {
+                            id: userCombo
+                            Layout.fillWidth: true
+                            model: userModel
+                            textRole: "name"
+                            currentIndex: userModel.lastIndex >= 0 ? userModel.lastIndex : 0
+                            font.family: config.font
+                            font.pixelSize: parseInt(config.fontSize)
                             background: Rectangle {
-                                color: userCombo.highlightedIndex === index ? config.passwordBorder : config.passwordBackground
-                            }
-                        }
-                        popup: Popup {
-                            y: userCombo.height - 1
-                            width: userCombo.width
-                            padding: 1
-                            contentItem: ListView {
-                                clip: true
-                                implicitHeight: contentHeight
-                                model: userCombo.popup.visible ? userCombo.delegateModel : null
-                                currentIndex: userCombo.highlightedIndex
-                            }
-                            background: Rectangle {
-                                color: config.passwordBackground
+                                color: "transparent"
                                 border.color: config.passwordBorder
                                 radius: 6
                             }
+                            contentItem: Text {
+                                text: userCombo.displayText
+                                color: config.passwordColor
+                                font: userCombo.font
+                                verticalAlignment: Text.AlignVCenter
+                                leftPadding: 10
+                                elide: Text.ElideRight
+                            }
+                            delegate: ItemDelegate {
+                                width: userCombo.width
+                                contentItem: Text {
+                                    text: model.name
+                                    color: config.passwordColor
+                                    font: userCombo.font
+                                    elide: Text.ElideRight
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+                                background: Rectangle {
+                                    color: userCombo.highlightedIndex === index ? config.passwordBorder : config.passwordBackground
+                                }
+                            }
+                            popup: Popup {
+                                y: userCombo.height - 1
+                                width: userCombo.width
+                                padding: 1
+                                contentItem: ListView {
+                                    clip: true
+                                    implicitHeight: contentHeight
+                                    model: userCombo.popup.visible ? userCombo.delegateModel : null
+                                    currentIndex: userCombo.highlightedIndex
+                                }
+                                background: Rectangle {
+                                    color: config.passwordBackground
+                                    border.color: config.passwordBorder
+                                    radius: 6
+                                }
+                            }
                         }
                     }
-                }
 
-                // Password Row
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 10
-                    Image {
-                        source: "icons/lock.svg"
-                        sourceSize.width: 24
-                        sourceSize.height: 24
-                    }
-                    TextField {
-                        id: passwordField
+                    // Password Row
+                    RowLayout {
                         Layout.fillWidth: true
-                        echoMode: TextInput.Password
-                        placeholderText: "Password"
+                        spacing: 10
+                        Image {
+                            source: "icons/lock.svg"
+                            sourceSize.width: 24
+                            sourceSize.height: 24
+                        }
+                        TextField {
+                            id: passwordField
+                            Layout.fillWidth: true
+                            echoMode: TextInput.Password
+                            placeholderText: "Password"
+                            font.family: config.font
+                            font.pixelSize: parseInt(config.fontSize)
+                            color: config.passwordColor
+                            background: Rectangle {
+                                color: "transparent"
+                                border.color: passwordField.activeFocus ? "#d79921" : config.passwordBorder
+                                radius: 6
+                            }
+                            onAccepted: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
+                        }
+                    }
+
+                    Item { height: 5 } // Spacer
+
+                    // Login Button
+                    Button {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 35 // Reduced height
+                        text: "LOG IN"
                         font.family: config.font
                         font.pixelSize: parseInt(config.fontSize)
-                        color: config.passwordColor
+                        onClicked: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
                         background: Rectangle {
-                            color: "transparent"
-                            border.color: passwordField.activeFocus ? "#d79921" : config.passwordBorder
+                            color: parent.down ? "#d79921" : "#fabd2f" // Bright yellow Gruvbox
                             radius: 6
                         }
-                        onAccepted: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
-                    }
-                }
-
-                Item { height: 10 } // Spacer
-
-                // Login Button
-                Button {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 45
-                    text: "LOG IN"
-                    font.family: config.font
-                    font.pixelSize: parseInt(config.fontSize)
-                    onClicked: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
-                    background: Rectangle {
-                        color: parent.down ? "#d79921" : "#fabd2f" // Bright yellow Gruvbox
-                        radius: 6
-                    }
-                    contentItem: Text {
-                        text: parent.text
-                        color: "#282828"
-                        horizontalAlignment: Text.AlignHCenter
-                        verticalAlignment: Text.AlignVCenter
-                        font.bold: true
-                        font.pixelSize: 16
+                        contentItem: Text {
+                            text: parent.text
+                            color: "#282828"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            font.bold: true
+                            font.pixelSize: 14 // Slightly smaller text
+                        }
                     }
                 }
             }
