@@ -1,0 +1,12 @@
+[SddmGreeterTheme]
+Name=Gruvbox Dark Cyber
+Description=Gruvbox Dark Theme with Cyberpunk Pixel Art Wallpapers
+Author=Antigravity
+Copyright=(c) 2026
+License=GPL
+Type=sddm-theme
+Version=1.0
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=gruvbox-dark-cyber
+Theme-API=2.0
