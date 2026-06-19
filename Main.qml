@@ -18,7 +18,7 @@ Rectangle {
     Rectangle {
         anchors.fill: parent
         color: "#000000"
-        opacity: 0.3
+        opacity: 0.4
     }
 
     Item {
@@ -28,15 +28,15 @@ Rectangle {
         ColumnLayout {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
-            anchors.topMargin: 100
-            spacing: 10
+            anchors.topMargin: 120
+            spacing: 5
 
             Text {
                 Layout.alignment: Qt.AlignHCenter
                 text: Qt.formatTime(new Date(), "hh:mm")
                 color: config.clockColor
                 font.family: config.clockFont
-                font.pixelSize: parseInt(config.clockFontSize)
+                font.pixelSize: parseInt(config.clockFontSize) || 64
                 font.bold: true
             }
             Text {
@@ -44,102 +44,126 @@ Rectangle {
                 text: Qt.formatDate(new Date(), Qt.DefaultLocaleLongDate)
                 color: config.dateColor
                 font.family: config.dateFont
-                font.pixelSize: parseInt(config.dateFontSize)
+                font.pixelSize: parseInt(config.dateFontSize) || 24
             }
         }
 
         // Login Panel
         Rectangle {
             anchors.centerIn: parent
-            width: 400
-            height: 300
+            width: 450
+            height: 350
             color: "#d9282828" // Gruvbox dark with alpha
-            radius: 8
+            radius: 12
             border.color: config.loginBorder
-            border.width: 2
+            border.width: 1
 
             ColumnLayout {
                 anchors.centerIn: parent
-                width: parent.width * 0.8
+                width: parent.width * 0.85
                 spacing: 20
 
-                ComboBox {
-                    id: userCombo
+                // User Row
+                RowLayout {
                     Layout.fillWidth: true
-                    model: userModel
-                    textRole: "name"
-                    currentIndex: userModel.lastIndex >= 0 ? userModel.lastIndex : 0
-                    font.family: config.font
-                    font.pixelSize: parseInt(config.fontSize)
-                    background: Rectangle {
-                        color: config.passwordBackground
-                        border.color: config.passwordBorder
-                        radius: 4
+                    spacing: 10
+                    Image {
+                        source: "icons/user.svg"
+                        sourceSize.width: 24
+                        sourceSize.height: 24
                     }
-                    contentItem: Text {
-                        text: userCombo.displayText
-                        color: config.passwordColor
-                        font: userCombo.font
-                        verticalAlignment: Text.AlignVCenter
-                        elide: Text.ElideRight
-                    }
-                    delegate: ItemDelegate {
-                        width: userCombo.width
+                    ComboBox {
+                        id: userCombo
+                        Layout.fillWidth: true
+                        model: userModel
+                        textRole: "name"
+                        currentIndex: userModel.lastIndex >= 0 ? userModel.lastIndex : 0
+                        font.family: config.font
+                        font.pixelSize: parseInt(config.fontSize)
+                        background: Rectangle {
+                            color: "transparent"
+                            border.color: config.passwordBorder
+                            radius: 6
+                        }
                         contentItem: Text {
-                            text: model.name
+                            text: userCombo.displayText
                             color: config.passwordColor
                             font: userCombo.font
-                            elide: Text.ElideRight
                             verticalAlignment: Text.AlignVCenter
+                            leftPadding: 10
+                            elide: Text.ElideRight
                         }
-                        background: Rectangle {
-                            color: userCombo.highlightedIndex === index ? config.passwordBorder : config.passwordBackground
+                        delegate: ItemDelegate {
+                            width: userCombo.width
+                            contentItem: Text {
+                                text: model.name
+                                color: config.passwordColor
+                                font: userCombo.font
+                                elide: Text.ElideRight
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            background: Rectangle {
+                                color: userCombo.highlightedIndex === index ? config.passwordBorder : config.passwordBackground
+                            }
                         }
-                    }
-                    popup: Popup {
-                        y: userCombo.height - 1
-                        width: userCombo.width
-                        implicitHeight: contentItem.implicitHeight
-                        padding: 1
-                        contentItem: ListView {
-                            clip: true
-                            implicitHeight: contentHeight
-                            model: userCombo.popup.visible ? userCombo.delegateModel : null
-                            currentIndex: userCombo.highlightedIndex
-                        }
-                        background: Rectangle {
-                            color: config.passwordBackground
-                            border.color: config.passwordBorder
-                            radius: 4
+                        popup: Popup {
+                            y: userCombo.height - 1
+                            width: userCombo.width
+                            padding: 1
+                            contentItem: ListView {
+                                clip: true
+                                implicitHeight: contentHeight
+                                model: userCombo.popup.visible ? userCombo.delegateModel : null
+                                currentIndex: userCombo.highlightedIndex
+                            }
+                            background: Rectangle {
+                                color: config.passwordBackground
+                                border.color: config.passwordBorder
+                                radius: 6
+                            }
                         }
                     }
                 }
 
-                TextField {
-                    id: passwordField
+                // Password Row
+                RowLayout {
                     Layout.fillWidth: true
-                    echoMode: TextInput.Password
-                    placeholderText: "Password..."
-                    font.family: config.font
-                    font.pixelSize: parseInt(config.fontSize)
-                    color: config.passwordColor
-                    background: Rectangle {
-                        color: config.passwordBackground
-                        border.color: passwordField.activeFocus ? "#d79921" : config.passwordBorder
-                        radius: 4
+                    spacing: 10
+                    Image {
+                        source: "icons/lock.svg"
+                        sourceSize.width: 24
+                        sourceSize.height: 24
                     }
-                    onAccepted: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
+                    TextField {
+                        id: passwordField
+                        Layout.fillWidth: true
+                        echoMode: TextInput.Password
+                        placeholderText: "Password"
+                        font.family: config.font
+                        font.pixelSize: parseInt(config.fontSize)
+                        color: config.passwordColor
+                        background: Rectangle {
+                            color: "transparent"
+                            border.color: passwordField.activeFocus ? "#d79921" : config.passwordBorder
+                            radius: 6
+                        }
+                        onAccepted: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
+                    }
                 }
 
+                Item { height: 10 } // Spacer
+
+                // Login Button
                 Button {
                     Layout.fillWidth: true
-                    text: "Login"
+                    Layout.preferredHeight: 45
+                    text: "LOG IN"
                     font.family: config.font
                     font.pixelSize: parseInt(config.fontSize)
                     onClicked: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
                     background: Rectangle {
-                        color: parent.down ? "#98971a" : "#b8bb26"
-                        radius: 4
+                        color: parent.down ? "#d79921" : "#fabd2f" // Bright yellow Gruvbox
+                        radius: 6
                     }
                     contentItem: Text {
                         text: parent.text
@@ -147,6 +171,7 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         font.bold: true
+                        font.pixelSize: 16
                     }
                 }
             }
@@ -176,6 +201,7 @@ Rectangle {
                     color: config.passwordColor
                     font: sessionCombo.font
                     verticalAlignment: Text.AlignVCenter
+                    leftPadding: 10
                     elide: Text.ElideRight
                 }
                 delegate: ItemDelegate {
@@ -194,7 +220,6 @@ Rectangle {
                 popup: Popup {
                     y: sessionCombo.height - 1
                     width: sessionCombo.width
-                    implicitHeight: contentItem.implicitHeight
                     padding: 1
                     contentItem: ListView {
                         clip: true
@@ -213,29 +238,24 @@ Rectangle {
             Item { Layout.fillWidth: true } // Spacer
             
             Button {
-                text: "Reboot"
                 onClicked: sddm.reboot()
-                background: Rectangle {
-                    color: "transparent"
-                    border.color: "#83a598"
-                    radius: 4
-                }
-                contentItem: Text {
-                    text: parent.text
-                    color: "#83a598"
+                background: Rectangle { color: "transparent" }
+                contentItem: RowLayout {
+                    spacing: 5
+                    Image { source: "icons/reboot.svg"; sourceSize.width: 18; sourceSize.height: 18 }
+                    Text { text: "Reboot"; color: "#83a598"; font.pixelSize: parseInt(config.fontSize) }
                 }
             }
+            
+            Item { width: 10 }
+            
             Button {
-                text: "Shutdown"
                 onClicked: sddm.powerOff()
-                background: Rectangle {
-                    color: "transparent"
-                    border.color: "#cc241d"
-                    radius: 4
-                }
-                contentItem: Text {
-                    text: parent.text
-                    color: "#cc241d"
+                background: Rectangle { color: "transparent" }
+                contentItem: RowLayout {
+                    spacing: 5
+                    Image { source: "icons/power.svg"; sourceSize.width: 18; sourceSize.height: 18 }
+                    Text { text: "Shutdown"; color: "#cc241d"; font.pixelSize: parseInt(config.fontSize) }
                 }
             }
         }
