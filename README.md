@@ -1,5 +1,7 @@
 # Gruvbox Dark Cyber SDDM Theme
 
+![Theme Preview](assets/preview.jpg)
+
 A custom SDDM theme featuring the classic Gruvbox dark aesthetic, paired with a collection of cyberpunk pixel art wallpapers. Built for Fedora KDE, but compatible with any distribution using SDDM.
 
 ## Installation
