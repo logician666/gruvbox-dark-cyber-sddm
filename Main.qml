@@ -8,55 +8,79 @@ Rectangle {
     height: 1080
     color: config.color
 
-    Image {
-        id: background
-        anchors.fill: parent
-        source: config.background
-        fillMode: Image.PreserveAspectCrop
-    }
+    // Live clock source — updated each second so the displayed minute is
+    // always exact (a frozen login clock is an imprecision).
+    property var now: new Date()
+    Timer { interval: 1000; running: true; repeat: true; onTriggered: root.now = new Date() }
 
-    Rectangle {
+    // ── Background: gruvbox graph-paper dot grid ────────────────────────────
+    // Minimalist, reproducible, no raster asset. A quiet mathematician's grid.
+    Canvas {
+        id: grid
         anchors.fill: parent
-        color: "#000000"
-        opacity: 0.4
+        onPaint: {
+            var ctx = getContext("2d")
+            ctx.clearRect(0, 0, width, height)
+            ctx.fillStyle = config.gridColor || "#32302f"
+            var step = 48
+            for (var x = step; x < width; x += step) {
+                for (var y = step; y < height; y += step) {
+                    ctx.beginPath()
+                    ctx.arc(x, y, 1.1, 0, 2 * Math.PI)
+                    ctx.fill()
+                }
+            }
+        }
     }
 
     Item {
         anchors.fill: parent
 
-        // Main Content Column (prevents overlap)
         ColumnLayout {
             anchors.centerIn: parent
             spacing: 30
 
-            // Time and Date
+            // ── Time / date ─────────────────────────────────────────────────
             ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter
-                spacing: 5
+                spacing: 6
 
                 Text {
                     Layout.alignment: Qt.AlignHCenter
-                    text: Qt.formatTime(new Date(), "hh:mm")
+                    text: Qt.formatTime(root.now, "HH:mm")
                     color: config.clockColor
                     font.family: config.clockFont
-                    font.pixelSize: parseInt(config.clockFontSize) || 64
+                    font.pixelSize: parseInt(config.clockFontSize) || 72
                     font.bold: true
                 }
+
+                // Thin accent rule — echoes the gruvbox aurorae titlebar accent.
+                Rectangle {
+                    Layout.alignment: Qt.AlignHCenter
+                    width: 96
+                    height: 2
+                    radius: 1
+                    color: config.accentColor
+                    opacity: 0.85
+                }
+
                 Text {
                     Layout.alignment: Qt.AlignHCenter
-                    text: Qt.formatDate(new Date(), Qt.DefaultLocaleLongDate)
+                    // ISO 8601 date + weekday — precision over locale prose.
+                    text: Qt.formatDate(root.now, "yyyy-MM-dd") + "  ·  " +
+                          Qt.formatDate(root.now, "dddd")
                     color: config.dateColor
                     font.family: config.dateFont
-                    font.pixelSize: parseInt(config.dateFontSize) || 24
+                    font.pixelSize: parseInt(config.dateFontSize) || 20
                 }
             }
 
-            // Login Panel
+            // ── Login panel ─────────────────────────────────────────────────
             Rectangle {
                 Layout.alignment: Qt.AlignHCenter
                 width: 400
                 implicitHeight: loginContent.implicitHeight + 60
-                color: "#d9282828" // Gruvbox dark with alpha
+                color: "#e6282828"
                 radius: 12
                 border.color: config.loginBorder
                 border.width: 1
@@ -67,39 +91,29 @@ Rectangle {
                     width: parent.width * 0.85
                     spacing: 20
 
-                    // Distro Logo and Name
                     ColumnLayout {
                         Layout.alignment: Qt.AlignHCenter
                         spacing: 8
-                        
+
                         Image {
                             Layout.alignment: Qt.AlignHCenter
                             source: "icons/fedora.svg"
-                            sourceSize.width: 48
-                            sourceSize.height: 48
+                            sourceSize.width: 44
+                            sourceSize.height: 44
                         }
-                        
+
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "Fedora KDE"
-                            color: "#ebdbb2"
+                            color: config.passwordColor
                             font.family: config.font
-                            font.pixelSize: 20
+                            font.pixelSize: 18
                             font.bold: true
-                        }
-                        
-                        Text {
-                            Layout.alignment: Qt.AlignHCenter
-                            text: "Login"
-                            color: "#b8bb26" // Gruvbox green
-                            font.family: config.font
-                            font.pixelSize: 14
                         }
                     }
 
-                    Item { height: 5 } // Spacer
+                    Item { height: 5 }
 
-                    // User Row
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 10
@@ -161,7 +175,6 @@ Rectangle {
                         }
                     }
 
-                    // Password Row
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 10
@@ -180,25 +193,24 @@ Rectangle {
                             color: config.passwordColor
                             background: Rectangle {
                                 color: "transparent"
-                                border.color: passwordField.activeFocus ? "#d79921" : config.passwordBorder
+                                border.color: passwordField.activeFocus ? config.accentColor : config.passwordBorder
                                 radius: 6
                             }
                             onAccepted: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
                         }
                     }
 
-                    Item { height: 5 } // Spacer
+                    Item { height: 5 }
 
-                    // Login Button
                     Button {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 35 // Reduced height
+                        Layout.preferredHeight: 35
                         text: "LOG IN"
                         font.family: config.font
                         font.pixelSize: parseInt(config.fontSize)
                         onClicked: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
                         background: Rectangle {
-                            color: parent.down ? "#d79921" : "#fabd2f" // Bright yellow Gruvbox
+                            color: parent.down ? "#b47109" : config.accentColor
                             radius: 6
                         }
                         contentItem: Text {
@@ -207,20 +219,20 @@ Rectangle {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                             font.bold: true
-                            font.pixelSize: 14 // Slightly smaller text
+                            font.pixelSize: 14
                         }
                     }
                 }
             }
         }
 
-        // Bottom Controls
+        // ── Bottom controls ─────────────────────────────────────────────────
         RowLayout {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.margins: 30
-            
+
             ComboBox {
                 id: sessionCombo
                 model: sessionModel
@@ -271,28 +283,28 @@ Rectangle {
                     }
                 }
             }
-            
-            Item { Layout.fillWidth: true } // Spacer
-            
+
+            Item { Layout.fillWidth: true }
+
             Button {
                 onClicked: sddm.reboot()
                 background: Rectangle { color: "transparent" }
                 contentItem: RowLayout {
                     spacing: 5
                     Image { source: "icons/reboot.svg"; sourceSize.width: 18; sourceSize.height: 18 }
-                    Text { text: "Reboot"; color: "#83a598"; font.pixelSize: parseInt(config.fontSize) }
+                    Text { text: "Reboot"; color: "#89b482"; font.pixelSize: parseInt(config.fontSize) }
                 }
             }
-            
+
             Item { width: 10 }
-            
+
             Button {
                 onClicked: sddm.powerOff()
                 background: Rectangle { color: "transparent" }
                 contentItem: RowLayout {
                     spacing: 5
                     Image { source: "icons/power.svg"; sourceSize.width: 18; sourceSize.height: 18 }
-                    Text { text: "Shutdown"; color: "#cc241d"; font.pixelSize: parseInt(config.fontSize) }
+                    Text { text: "Shutdown"; color: "#ea6962"; font.pixelSize: parseInt(config.fontSize) }
                 }
             }
         }

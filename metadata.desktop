@@ -1,7 +1,7 @@
 [SddmGreeterTheme]
 Name=Gruvbox Dark Cyber
-Description=Gruvbox Dark Theme with Cyberpunk Pixel Art Wallpapers
-Author=Antigravity
+Description=Gruvbox login theme — graph-paper grid, ISO 8601 clock, Material accents
+Author=Logician
 Copyright=(c) 2026
 License=GPL
 Type=sddm-theme
