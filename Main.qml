@@ -8,29 +8,46 @@ Rectangle {
     height: 1080
     color: config.color
 
-    // Live clock source — updated each second so the displayed minute is
-    // always exact (a frozen login clock is an imprecision).
+    // Scale factor — keeps type legible across resolutions (designed at 1080p).
+    property real ui: height / 1080
+
+    // Live clock — updated each second so the displayed minute is always exact.
     property var now: new Date()
     Timer { interval: 1000; running: true; repeat: true; onTriggered: root.now = new Date() }
 
-    // ── Background: gruvbox graph-paper dot grid ────────────────────────────
-    // Minimalist, reproducible, no raster asset. A quiet mathematician's grid.
+    // ── Background: gruvbox wallpaper + faint graph-paper grid + scrim ───────
+    Image {
+        id: background
+        anchors.fill: parent
+        source: config.background
+        fillMode: Image.PreserveAspectCrop
+    }
+
     Canvas {
         id: grid
         anchors.fill: parent
+        opacity: 0.35
         onPaint: {
             var ctx = getContext("2d")
             ctx.clearRect(0, 0, width, height)
-            ctx.fillStyle = config.gridColor || "#32302f"
-            var step = 48
+            ctx.fillStyle = config.gridColor || "#3c3836"
+            var step = 48 * root.ui
+            var r = 1.1 * root.ui
             for (var x = step; x < width; x += step) {
                 for (var y = step; y < height; y += step) {
                     ctx.beginPath()
-                    ctx.arc(x, y, 1.1, 0, 2 * Math.PI)
+                    ctx.arc(x, y, r, 0, 2 * Math.PI)
                     ctx.fill()
                 }
             }
         }
+    }
+
+    // Scrim for text legibility over the wallpaper.
+    Rectangle {
+        anchors.fill: parent
+        color: "#282828"
+        opacity: 0.45
     }
 
     Item {
@@ -38,30 +55,30 @@ Rectangle {
 
         ColumnLayout {
             anchors.centerIn: parent
-            spacing: 30
+            spacing: 34 * root.ui
 
             // ── Time / date ─────────────────────────────────────────────────
             ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter
-                spacing: 6
+                spacing: 8 * root.ui
 
                 Text {
                     Layout.alignment: Qt.AlignHCenter
                     text: Qt.formatTime(root.now, "HH:mm")
                     color: config.clockColor
                     font.family: config.clockFont
-                    font.pixelSize: parseInt(config.clockFontSize) || 72
+                    font.pixelSize: Math.round((parseInt(config.clockFontSize) || 96) * root.ui)
                     font.bold: true
                 }
 
                 // Thin accent rule — echoes the gruvbox aurorae titlebar accent.
                 Rectangle {
                     Layout.alignment: Qt.AlignHCenter
-                    width: 96
-                    height: 2
-                    radius: 1
+                    width: 120 * root.ui
+                    height: 3 * root.ui
+                    radius: height / 2
                     color: config.accentColor
-                    opacity: 0.85
+                    opacity: 0.9
                 }
 
                 Text {
@@ -71,17 +88,17 @@ Rectangle {
                           Qt.formatDate(root.now, "dddd")
                     color: config.dateColor
                     font.family: config.dateFont
-                    font.pixelSize: parseInt(config.dateFontSize) || 20
+                    font.pixelSize: Math.round((parseInt(config.dateFontSize) || 26) * root.ui)
                 }
             }
 
             // ── Login panel ─────────────────────────────────────────────────
             Rectangle {
                 Layout.alignment: Qt.AlignHCenter
-                width: 400
-                implicitHeight: loginContent.implicitHeight + 60
+                width: 440 * root.ui
+                implicitHeight: loginContent.implicitHeight + 64 * root.ui
                 color: "#e6282828"
-                radius: 12
+                radius: 14 * root.ui
                 border.color: config.loginBorder
                 border.width: 1
 
@@ -89,17 +106,17 @@ Rectangle {
                     id: loginContent
                     anchors.centerIn: parent
                     width: parent.width * 0.85
-                    spacing: 20
+                    spacing: 22 * root.ui
 
                     ColumnLayout {
                         Layout.alignment: Qt.AlignHCenter
-                        spacing: 8
+                        spacing: 10 * root.ui
 
                         Image {
                             Layout.alignment: Qt.AlignHCenter
                             source: "icons/fedora.svg"
-                            sourceSize.width: 44
-                            sourceSize.height: 44
+                            sourceSize.width: 52 * root.ui
+                            sourceSize.height: 52 * root.ui
                         }
 
                         Text {
@@ -107,29 +124,30 @@ Rectangle {
                             text: "Fedora KDE"
                             color: config.passwordColor
                             font.family: config.font
-                            font.pixelSize: 18
+                            font.pixelSize: Math.round(22 * root.ui)
                             font.bold: true
                         }
                     }
 
-                    Item { height: 5 }
+                    Item { height: 6 * root.ui }
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: 10
+                        spacing: 12 * root.ui
                         Image {
                             source: "icons/user.svg"
-                            sourceSize.width: 24
-                            sourceSize.height: 24
+                            sourceSize.width: 28 * root.ui
+                            sourceSize.height: 28 * root.ui
                         }
                         ComboBox {
                             id: userCombo
                             Layout.fillWidth: true
+                            Layout.preferredHeight: 40 * root.ui
                             model: userModel
                             textRole: "name"
                             currentIndex: userModel.lastIndex >= 0 ? userModel.lastIndex : 0
                             font.family: config.font
-                            font.pixelSize: parseInt(config.fontSize)
+                            font.pixelSize: Math.round(parseInt(config.fontSize) * root.ui)
                             background: Rectangle {
                                 color: "transparent"
                                 border.color: config.passwordBorder
@@ -140,7 +158,7 @@ Rectangle {
                                 color: config.passwordColor
                                 font: userCombo.font
                                 verticalAlignment: Text.AlignVCenter
-                                leftPadding: 10
+                                leftPadding: 12
                                 elide: Text.ElideRight
                             }
                             delegate: ItemDelegate {
@@ -177,19 +195,20 @@ Rectangle {
 
                     RowLayout {
                         Layout.fillWidth: true
-                        spacing: 10
+                        spacing: 12 * root.ui
                         Image {
                             source: "icons/lock.svg"
-                            sourceSize.width: 24
-                            sourceSize.height: 24
+                            sourceSize.width: 28 * root.ui
+                            sourceSize.height: 28 * root.ui
                         }
                         TextField {
                             id: passwordField
                             Layout.fillWidth: true
+                            Layout.preferredHeight: 40 * root.ui
                             echoMode: TextInput.Password
                             placeholderText: "Password"
                             font.family: config.font
-                            font.pixelSize: parseInt(config.fontSize)
+                            font.pixelSize: Math.round(parseInt(config.fontSize) * root.ui)
                             color: config.passwordColor
                             background: Rectangle {
                                 color: "transparent"
@@ -200,14 +219,13 @@ Rectangle {
                         }
                     }
 
-                    Item { height: 5 }
+                    Item { height: 6 * root.ui }
 
                     Button {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 35
+                        Layout.preferredHeight: 44 * root.ui
                         text: "LOG IN"
                         font.family: config.font
-                        font.pixelSize: parseInt(config.fontSize)
                         onClicked: sddm.login(userCombo.currentText, passwordField.text, sessionCombo.currentIndex)
                         background: Rectangle {
                             color: parent.down ? "#b47109" : config.accentColor
@@ -219,7 +237,7 @@ Rectangle {
                             horizontalAlignment: Text.AlignHCenter
                             verticalAlignment: Text.AlignVCenter
                             font.bold: true
-                            font.pixelSize: 14
+                            font.pixelSize: Math.round(16 * root.ui)
                         }
                     }
                 }
@@ -231,15 +249,17 @@ Rectangle {
             anchors.bottom: parent.bottom
             anchors.left: parent.left
             anchors.right: parent.right
-            anchors.margins: 30
+            anchors.margins: 34 * root.ui
+            spacing: 12 * root.ui
 
             ComboBox {
                 id: sessionCombo
+                Layout.preferredHeight: 36 * root.ui
                 model: sessionModel
                 textRole: "name"
                 currentIndex: sessionModel.lastIndex >= 0 ? sessionModel.lastIndex : 0
                 font.family: config.font
-                font.pixelSize: parseInt(config.fontSize)
+                font.pixelSize: Math.round(parseInt(config.fontSize) * root.ui)
                 background: Rectangle {
                     color: config.passwordBackground
                     border.color: config.passwordBorder
@@ -250,7 +270,7 @@ Rectangle {
                     color: config.passwordColor
                     font: sessionCombo.font
                     verticalAlignment: Text.AlignVCenter
-                    leftPadding: 10
+                    leftPadding: 12
                     elide: Text.ElideRight
                 }
                 delegate: ItemDelegate {
@@ -290,21 +310,21 @@ Rectangle {
                 onClicked: sddm.reboot()
                 background: Rectangle { color: "transparent" }
                 contentItem: RowLayout {
-                    spacing: 5
-                    Image { source: "icons/reboot.svg"; sourceSize.width: 18; sourceSize.height: 18 }
-                    Text { text: "Reboot"; color: "#89b482"; font.pixelSize: parseInt(config.fontSize) }
+                    spacing: 6 * root.ui
+                    Image { source: "icons/reboot.svg"; sourceSize.width: 20 * root.ui; sourceSize.height: 20 * root.ui }
+                    Text { text: "Reboot"; color: "#89b482"; font.pixelSize: Math.round(parseInt(config.fontSize) * root.ui) }
                 }
             }
 
-            Item { width: 10 }
+            Item { width: 12 * root.ui }
 
             Button {
                 onClicked: sddm.powerOff()
                 background: Rectangle { color: "transparent" }
                 contentItem: RowLayout {
-                    spacing: 5
-                    Image { source: "icons/power.svg"; sourceSize.width: 18; sourceSize.height: 18 }
-                    Text { text: "Shutdown"; color: "#ea6962"; font.pixelSize: parseInt(config.fontSize) }
+                    spacing: 6 * root.ui
+                    Image { source: "icons/power.svg"; sourceSize.width: 20 * root.ui; sourceSize.height: 20 * root.ui }
+                    Text { text: "Shutdown"; color: "#ea6962"; font.pixelSize: Math.round(parseInt(config.fontSize) * root.ui) }
                 }
             }
         }
